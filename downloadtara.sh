@@ -13,11 +13,8 @@
 rawdata="/home/ccz99536/rawdata/"
 mkdir -p "$rawdata"
 
-# Array of FTP URLs for the desired datasets
 urls=(
-    "ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR598/ERR598972/ERR598972.fastq.gz"
-    "ftp://ftp.sra.ebi.ac.uk/vol1/fastq/ERR599/ERR599021/ERR599021.fastq.gz"
-    # Add more URLs as needed
+   "https://zenodo.org/api/records/7551644/files-archive"
 )
 
 # Loop through URLs and download each file
@@ -27,3 +24,5 @@ for url in "${urls[@]}"; do
 done
 
 echo "Download complete. Files are stored in $rawdata."
+
+## Ideally downloads data in tsv format of DADA2 output from zenodo
