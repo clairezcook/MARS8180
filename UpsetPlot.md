@@ -1,4 +1,4 @@
-#### Upset plot ####
+# Upset plot
 Upset plots are a great tool to visualize overlapping data within a dataset. Similar to a Venn diagram, an upset plot will show what overlaps between defined differences in your dataset. To learn more about how these plots work, see https://upset.app/. An example plot is below where we can see that the data present in multiple different samples, some data overlap between 2 or 3 of the samples while others are just present in 1. This upset plot helps us visualize how similar and/or different these datasets are.
 
 ![concept_4_sorting](https://github.com/user-attachments/assets/c78b4b4b-8c79-4939-9748-7770b25858ae)
@@ -23,7 +23,7 @@ dds <- DESeqDataSetFromMatrix(countData = gene_abundance_matrix_rounded,
 dds <- DESeq(dds)
 ```
 # Edit factor levels to make contrasts easier
-We are going to ultimately compare genes found in San Diego surface and DCM water to Honolulu surface and DCM water. We're going to create a group in our dds dataframe 
+We are going to ultimately compare genes found in San Diego surface and DCM water to Honolulu surface and DCM water. We're going to create a group in our dds dataframe for each of our comparisons (San Diego surface, San Diego DCM, Honolulu surface, and Honolulu DCM). 
 
 ```
 colData(dds)$site_depth <- factor(paste(dds$location, dds$notes, sep = "_"))
@@ -45,6 +45,7 @@ contrast_list <- list(
 )
 ```
 # Subset by genes that are significantly (p<0.5) different between location and/or depth
+We want to compare genes that were significantly different between location and/or depth so we can create a function that will search through our dds and look for significant relationships between our defined contrasts. San Diego surface has to be added back in as it was used for the reference earlier. 
 ```
 
 get_sig_genes <- function(dds, contrast) {
@@ -64,6 +65,7 @@ all_genes <- unique(unlist(sig_lists))
 
 ```
 # Create a binary presence/absence data frame for UpSet plotting
+UpSet plots require binary presence/absence data. To create that, we'll create a dataframe specific to the Upset plot looking at our significant contrasts. 
 
 ```
 upset_data <- data.frame(
@@ -75,6 +77,8 @@ upset_data <- data.frame(
 )
 ```
 # UpSet plot
+Finally, we can plot the data! 21 genes are significantly shared between San Diego depths. Interestingly, no genes were shared only by Honolulu depths, meaning that these samples are not distinct from other regions. 
+
 ```
 ComplexUpset::upset(
   upset_data,
