@@ -75,12 +75,13 @@ upset_data <- data.frame(
 )
 ```
 # UpSet plot
+```
 ComplexUpset::upset(
   upset_data,
   intersect = c("SanDiego_surface", "SanDiego_DCM", "Honolulu_surface", "Honolulu_DCM"),
   name = "DE Genes",
   base_annotations = list('Intersection size' = intersection_size())
 )
-
+```
 ![image](https://github.com/user-attachments/assets/2da9675f-8c8d-4351-9e79-c6e88a6c1ef0)
 
