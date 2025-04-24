@@ -22,42 +22,64 @@ dds <- DESeqDataSetFromMatrix(countData = gene_abundance_matrix_rounded,
 
 dds <- DESeq(dds)
 ```
+# Edit factor levels to make contrasts easier
+We are going to ultimately compare genes found in San Diego surface and DCM water to Honolulu surface and DCM water. We're going to create a group in our dds dataframe 
+
+```
+colData(dds)$site_depth <- factor(paste(dds$location, dds$notes, sep = "_"))
+colData(dds)$group <- with(colData(dds), paste(location, notes, sep = "_"))
+colData(dds)$group <- factor(colData(dds)$group)
+design(dds) <- ~ group
+dds$group <- relevel(dds$group, ref = "San_Diego_surface_water")
+dds <- DESeq(dds)
+resultsNames(dds)
+```
 # Define contrasts you want to compare
 Contrasts can include multiple different variables within your metadata. Here we'll just compare between locations (San Diego vs. Honolulu) and depth (surface vs. deep chlorophyll maximum)
 ```
 contrast_list <- list(
-  location = c("location", "San Diego", "Honolulu"),
-  depth = c("notes", "surface_water", "deep_chlorophyll_maximum")
+  SD_surface_vs_DCM = c("group", "San_Diego_surface_water", "San_Diego_deep_chlorophyll_maximum"),
+  HNL_surface_vs_DCM = c("group", "Honolulu_surface_water", "Honolulu_deep_chlorophyll_maximum"),
+  SD_surface_vs_HNL_surface = c("group", "San_Diego_surface_water", "Honolulu_surface_water"),
+  SD_DCM_vs_HNL_DCM = c("group", "San_Diego_deep_chlorophyll_maximum", "Honolulu_deep_chlorophyll_maximum")
 )
 ```
 # Subset by genes that are significantly (p<0.5) different between location and/or depth
 ```
+
 get_sig_genes <- function(dds, contrast) {
   res <- results(dds, contrast = contrast)
   sig <- res[which(res$padj < 0.05 & !is.na(res$padj)), ]
   return(rownames(sig))
 }
-```
-# Get DE genes for each contrast
-sig_location <- get_sig_genes(dds, contrast_list$location)
-sig_notes <- get_sig_genes(dds, contrast_list$depth)
 
+sig_lists <- lapply(contrast_list, function(contrast) get_sig_genes(dds, contrast))
+names(sig_lists) <- names(contrast_list)
+all_genes <- unique(unlist(sig_lists))
+
+
+sig_SanDiego_surface <- unique(unlist(sig_lists))
+sig_lists$SanDiego_surface <- sig_SanDiego_surface
+all_genes <- unique(unlist(sig_lists))
+
+```
 # Create a binary presence/absence data frame for UpSet plotting
-all_genes <- unique(c(sig_location, sig_notes))
+
+```
 upset_data <- data.frame(
   gene = all_genes,
-  location = all_genes %in% sig_location,
-  notes = all_genes %in% sig_notes
+  SanDiego_surface = all_genes %in% sig_lists$SanDiego_surface,
+  SanDiego_DCM     = all_genes %in% sig_lists$SanDiego_DCM,
+  Honolulu_surface = all_genes %in% sig_lists$Honolulu_surface,
+  Honolulu_DCM     = all_genes %in% sig_lists$Honolulu_DCM
 )
-
+```
 # UpSet plot
 ComplexUpset::upset(
   upset_data,
-  intersect = c("location", "notes"),
+  intersect = c("SanDiego_surface", "SanDiego_DCM", "Honolulu_surface", "Honolulu_DCM"),
   name = "DE Genes",
-  base_annotations=list(
-    'Intersection size'=intersection_size()
-  )
+  base_annotations = list('Intersection size' = intersection_size())
 )
 
 ![image](https://github.com/user-attachments/assets/2da9675f-8c8d-4351-9e79-c6e88a6c1ef0)
