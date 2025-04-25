@@ -75,7 +75,7 @@ upset_data <- data.frame(
 )
 ```
 # UpSet plot
-Finally, we can plot the data! 21 genes are significantly shared between San Diego depths. Interestingly, no genes were shared only by Honolulu depths, meaning that these samples are not distinct from other regions. 
+Finally, we can plot the data! 21 genes are significantly shared between San Diego depths. Interestingly, no genes were significantly shared only by Honolulu depths, meaning that these samples are not distinct from other regions. 
 
 ```
 ComplexUpset::upset(
