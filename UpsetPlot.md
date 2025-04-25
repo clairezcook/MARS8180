@@ -26,13 +26,11 @@ dds <- DESeq(dds)
 We are going to ultimately compare genes found in San Diego surface and DCM water to Honolulu surface and DCM water. We're going to create a group in our dds dataframe for each of our comparisons (San Diego surface, San Diego DCM, Honolulu surface, and Honolulu DCM). 
 
 ```
-colData(dds)$site_depth <- factor(paste(dds$location, dds$notes, sep = "_"))
-colData(dds)$group <- with(colData(dds), paste(location, notes, sep = "_"))
-colData(dds)$group <- factor(colData(dds)$group)
-design(dds) <- ~ group
+colData(dds)$location <- gsub(" ", "_", colData(dds)$location)
+colData(dds)$group <- factor(paste(colData(dds)$location, colData(dds)$notes, sep = "_"))
 dds$group <- relevel(dds$group, ref = "San_Diego_surface_water")
+design(dds) <- ~ group
 dds <- DESeq(dds)
-resultsNames(dds)
 ```
 # Define contrasts you want to compare
 Contrasts can include multiple different variables within your metadata. Here we'll just compare between locations (San Diego vs. Honolulu) and depth (surface vs. deep chlorophyll maximum)
